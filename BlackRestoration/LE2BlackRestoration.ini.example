@@ -1,0 +1,95 @@
+[LE2BlackRestoration]
+; LE2 Black Restoration by N7SteveMods.
+; Save this file while the game is running to hot-reload it.
+;
+; Any restoration setting omitted from this section falls back to the IPS-SDR
+; release default shown below. A setting that is present but invalid is rejected,
+; and the previously active configuration remains in use.
+;
+; PRIMARY RESTORATION CONTROLS
+; NearBlackRecovery    = Recovers crushed-but-nonzero tones while an exact 0 remains 0.
+;                        Range: 0.0 .. 0.020
+; NearBlackDetail      = Expands separation between very dark RGB tones without raising absolute black.
+;                        0 = off; higher values increase near-black tonal separation. Range: 0.0 .. 2.5
+; PureBlackProtection  = How much of the very darkest range is protected before recovery reaches full strength.
+;                        The transition is smooth (smoothstep), so there is no hard slope change.
+;                        Lower = recovery comes in closer to absolute black. Range: 0.00005 .. 0.005
+; NearBlackRange       = How far upward the near-black shaping acts. Range: 0.005 .. 0.100
+;
+; ADVANCED SHADOW CONTROLS
+; ShadowBoost          = Luminance-based shadow recovery. IPS-SDR keeps this at 0.
+;                        Range: 0.0 .. 4.0
+; ShadowRange          = How far upward from black ShadowBoost is allowed to act. Range: 0.005 .. 0.100
+; ShadowFade           = How quickly ShadowBoost fades as pixels get brighter.
+;                        1 = broad/gentle, 4 = tightly concentrated near black. Integer: 1 .. 4
+;
+; BlackFloorLift       = Advanced true black-floor lift. Keep 0.0 to guarantee pre-LUT 0 -> 0.
+;                        Values > 0 deliberately raise absolute black. Range: 0.0 .. 0.020
+;
+; IPS-SDR release defaults. These preserve absolute black with BlackFloorLift=0.
+ShadowBoost=0.0
+ShadowRange=0.026
+ShadowFade=3
+NearBlackRange=0.040
+NearBlackDetail=0.0
+NearBlackRecovery=0.005
+PureBlackProtection=0.0005
+BlackFloorLift=0.0
+
+[Hotkeys]
+; Set Enabled=0 to disable all runtime hotkeys without disabling the restoration itself.
+Enabled=1
+;
+; BASE KEY CONFIGURATION
+; The four base keys below are fully configurable. Modifiers (Shift/Ctrl/Alt)
+; keep the meanings documented further down.
+;
+; Accepted key names (case-insensitive):
+;   F1 .. F24
+;   A .. Z
+;   0 .. 9
+;   Numpad0 .. Numpad9
+;   Home, End, Insert, Delete, PageUp, PageDown, Up, Down, Left, Right
+;
+; The four base keys must be different from each other. Invalid or duplicate
+; mappings are rejected on hot-reload and the previous valid configuration stays active.
+;
+; Default mapping:
+DecreaseKey=F6
+IncreaseKey=F7
+ActionKey=F8
+BypassKey=F9
+;
+; Example alternative mapping if another overlay/service uses F6-F9:
+; DecreaseKey=F10
+; IncreaseKey=F11
+; ActionKey=Home
+; BypassKey=End
+;
+; EXACT MODIFIER MATCHING
+; Only the combinations listed below trigger an action. Extra modifiers do nothing.
+; Example: Alt+ActionKey does NOT perform the plain ActionKey command.
+;
+; DECREASE / INCREASE TUNING
+; DecreaseKey / IncreaseKey                    = NearBlackRecovery -/+ 0.0005
+; Shift + DecreaseKey / IncreaseKey            = NearBlackDetail -/+ 0.1
+; Alt + DecreaseKey / IncreaseKey              = PureBlackProtection -/+ 0.0001
+; Ctrl + DecreaseKey / IncreaseKey             = NearBlackRange -/+ 0.002
+;
+; ADVANCED SHADOW TUNING
+; Ctrl + Shift + DecreaseKey / IncreaseKey     = ShadowBoost -/+ 0.1
+; Ctrl + Alt + DecreaseKey / IncreaseKey       = ShadowRange -/+ 0.002
+; Ctrl + Shift + Alt + DecreaseKey / IncreaseKey = ShadowFade -/+ 1
+;
+; ACTIONS
+; ActionKey                                     = reset CUSTOM tuning to IPS-SDR defaults
+; Shift + ActionKey                             = toggle CUSTOM <-> IPS-SDR comparison
+;                                                 (CUSTOM values are preserved)
+; Ctrl + ActionKey                              = save current CUSTOM tuning to
+;                                                 LE2BlackRestoration_Profile.ini
+; Ctrl + Shift + ActionKey                      = load LE2BlackRestoration_Profile.ini
+;                                                 and apply it immediately
+; Shift + BypassKey                             = toggle the whole restoration effect off/on
+; BypassKey by itself                           = intentionally unused
+;
+; BlackFloorLift is deliberately INI-only because values above 0 change true black.
