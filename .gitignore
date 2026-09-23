@@ -1,15 +1,45 @@
+# External source checkouts and project-local tools
+_external/
+_tools/
+
+# Build products and compiler/debug artifacts
 Build/
 build/
-.vs/
-
+out/
+bin/
+obj/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
 *.obj
-*.lib
-*.exp
 *.pdb
 *.ilk
 *.idb
 *.pch
+*.exp
+*.lib
+*.dll
+*.asi
 
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
+# Generated deployment/archive outputs
+_deploy/
+dist/
+*.7z
+*.zip
+*.rar
+
+# Caches and temporary files
+.vs/
+.vscode/
+.idea/
+__pycache__/
+*.py[cod]
+*.tmp
+*.temp
+*.bak
+*.log
+Thumbs.db
+Desktop.ini
+
+# Runtime/user-generated tuning state
+LE2BlackRestoration_Profile.ini
