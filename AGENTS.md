@@ -2,7 +2,7 @@
 
 ## Mission and release state
 
-This repository contains the release-candidate package and reproducibility tooling for **LE2 Black Restoration v1.0.0**, a Mass Effect 2 Legendary Edition (PC, D3D11 x64) mod by N7SteveMods. The effect restores near-black separation in the native post-processing path immediately before the Filmic LUT. It must preserve absolute black, must not become a general exposure/gamma/contrast adjustment, and does not use ReShade.
+This is the main repository for **LE2 Black Restoration v1.0.0**, a Mass Effect 2 Legendary Edition (PC, D3D11 x64) mod by N7SteveMods. It contains the release-candidate Mod Manager package, reproducibility tooling, documentation, and optional ASI source. The effect restores near-black separation in the native post-processing path immediately before the Filmic LUT. It must preserve absolute black, must not become a general exposure/gamma/contrast adjustment, and does not use ReShade.
 
 Treat the checked-in package as the release source of truth. The shader design is frozen: investigate and prove a concrete release-blocking defect before changing shader math, topology, preset values, generated M3GS files, or installer behavior. Do not perform aesthetic refactors during release preparation.
 
@@ -11,7 +11,11 @@ Treat the checked-in package as the release source of truth. The shader design i
 ```text
 LE2 Black Restoration/                 repository root
 ├─ AGENTS.md
+├─ README.md
+├─ LICENSE
 ├─ .gitignore
+├─ ASI/
+│  └─ BlackRestoration/                optional ASI source and example INI
 ├─ LE2 Black Restoration/             real ME3Tweaks Mod Manager package
 │  ├─ moddesc.ini
 │  ├─ DLC_MOD_LE2BlackRestoration/
@@ -94,13 +98,7 @@ The current legacy blobs keep the same container/SHEX sizes, token and instructi
 
 ## Reproducible shader workflow
 
-The tracked wrapper builds against the canonical `DxbcPatcher.cpp/.hpp` from an ignored source checkout; it does not contain a second patcher implementation.
-
-Required checkout:
-
-```powershell
-git clone https://github.com/N7Steve/LE2BlackRestoration.git _external/LE2BlackRestoration
-```
+The tracked wrapper builds directly against the canonical `ASI/BlackRestoration/DxbcPatcher.cpp/.hpp` in this repository; it does not contain a second patcher implementation or require an external source checkout.
 
 Build the validator/generator:
 
@@ -131,11 +129,12 @@ The investigation on 2026-09-23 used these ignored shallow checkouts:
 
 | Checkout | Inspected commit | Purpose |
 | --- | --- | --- |
-| `_external/LE2BlackRestoration` | `2b6d681893806c42bc612aa83734d0ecce03f221` | Canonical DXBC patcher and optional ASI source. |
+| Git history before unification | `2b6d681893806c42bc612aa83734d0ecce03f221` | Original ASI/DXBC patcher source, now integrated under `ASI/BlackRestoration`. |
 | `_external/ME3TweaksModManager` | `1c98d93e410c589cf48624e7e13aec02079d3bcd` | ModDesc 9.2, Alternate DLC/OptionGroup, install/deploy behavior. |
 | `_external/ME3TweaksCore` | `b5f006add38dbaea91dde3f16f45ecbc3b0155a9` | Current GlobalShaderMerge implementation. |
+| `_external/LExASIs` | `aaad03ab6e5112e27ff5528f7b08c3bcf3870c31` | Optional ASI build host; ignored and not vendored. |
 
-LExASIs was intentionally not cloned because the primary DLC validation does not build the optional ASI. Clone it under `_external/LExASIs` only when optional-ASI build work is explicitly in scope.
+LExASIs is not vendored. Clone it under `_external/LExASIs` only when building the optional ASI; copy `ASI/BlackRestoration` into that checkout as `BlackRestoration` and add its subdirectory as documented in the root and ASI READMEs. The integrated source was successfully built as `BlackRestoration-LE2` in RELEASE with the commit above and Visual Studio 2022/MSVC 19.44.
 
 Available local tools at investigation time: Git 2.51, PowerShell 7.6, Python 3.11, CMake 4.4, Visual Studio 2022 Build Tools/MSVC 19.44, and Windows SDK 10.0.26100 with x64 `fxc.exe` and `dxc.exe`. `fxc`/`dxc` are not on the normal PATH; use the Windows SDK path discovered locally. Modern generation does not require recompiling HLSL.
 
@@ -158,7 +157,7 @@ Run `scripts/Validate-Release.ps1`, then confirm all of the following:
 
 ## Known discrepancies and unresolved work
 
-- **Optional ASI defaults differ from the public default.** Source commit `2b6d681...` uses `NearBlackDetail=0.0` and `NearBlackRecovery=0.005`; the public IPS-SDR Reference uses `0.1` and `0.0045`. Align and retest only when optional-ASI release work is in scope. The DLC release itself is unaffected.
+- **Optional ASI defaults are aligned but need a full ASI rebuild/regression test.** The integrated source now uses the public IPS-SDR Reference values (`NearBlackDetail=0.1`, `NearBlackRecovery=0.0045`). Rebuild through LExASIs and repeat runtime/hotkey/profile tests before distributing the ASI.
 - **Optional ASI is not trusted-release ready.** `SharedVersion.h` still has placeholder `ASI_GROUP_ID_RC 0`; ME3Tweaks must assign the real GroupID before a trusted ASI build.
 - **Legacy equivalence is unproved.** The observed LE2 implementation is a conservative visual emulation, not a demonstrated literal removal of an LE2 `-0.004` operation.
 - **Official packaging/in-game validation remains manual.** The source/bytecode checks do not replace clean Mod Manager deployment and gameplay testing.

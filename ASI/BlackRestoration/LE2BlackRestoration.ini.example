@@ -31,8 +31,8 @@ ShadowBoost=0.0
 ShadowRange=0.026
 ShadowFade=3
 NearBlackRange=0.040
-NearBlackDetail=0.0
-NearBlackRecovery=0.005
+NearBlackDetail=0.1
+NearBlackRecovery=0.0045
 PureBlackProtection=0.0005
 BlackFloorLift=0.0
 

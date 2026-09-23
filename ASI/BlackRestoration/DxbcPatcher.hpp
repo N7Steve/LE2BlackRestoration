@@ -16,8 +16,8 @@ struct Parameters {
     double shadow_range = 0.026;      // Luminance range affected by ShadowBoost.
     std::uint32_t shadow_fade = 3;    // 1..4: higher = effect fades faster away from black.
     double near_black_range = 0.040;      // Per-channel range affected by near-black shaping.
-    double near_black_detail = 0.0;      // Zero-preserving local contrast/detail expansion.
-    double near_black_recovery = 0.005;  // Protected lift for values above absolute black.
+    double near_black_detail = 0.1;      // Zero-preserving local contrast/detail expansion.
+    double near_black_recovery = 0.0045; // Protected lift for values above absolute black.
     double pure_black_protection = 0.0005;// Ramp distance from 0 before recovery reaches full strength.
     double black_floor_lift = 0.0;        // Advanced true black-floor lift. Keep 0 to guarantee 0 -> 0.
 };

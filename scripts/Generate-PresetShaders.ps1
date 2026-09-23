@@ -3,13 +3,13 @@ param(
     [Parameter(Mandatory)][string]$BaselineDirectory,
     [Parameter(Mandatory)][string]$PresetIni,
     [Parameter(Mandatory)][string]$OutputDirectory,
-    [string]$SourceCheckout,
+    [string]$PatcherDirectory,
     [string]$BuildDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 $buildArgs = @{}
-if ($SourceCheckout) { $buildArgs.SourceCheckout = $SourceCheckout }
+if ($PatcherDirectory) { $buildArgs.PatcherDirectory = $PatcherDirectory }
 if ($BuildDirectory) { $buildArgs.BuildDirectory = $BuildDirectory }
 $tool = & (Join-Path $PSScriptRoot 'Build-ShaderTool.ps1') @buildArgs | Select-Object -Last 1
 if (-not (Test-Path -LiteralPath $tool)) { throw "Shader tool not found at $tool" }

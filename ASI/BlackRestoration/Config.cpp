@@ -230,8 +230,8 @@ blackcrush::Parameters ReleaseDefaultParameters() {
     p.shadow_range = 0.026;
     p.shadow_fade = 3;
     p.near_black_range = 0.040;
-    p.near_black_detail = 0.0;
-    p.near_black_recovery = 0.005;
+    p.near_black_detail = 0.1;
+    p.near_black_recovery = 0.0045;
     p.pure_black_protection = 0.0005;
     p.black_floor_lift = 0.0;
     return p;

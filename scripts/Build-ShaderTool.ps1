@@ -1,23 +1,22 @@
 [CmdletBinding()]
 param(
-    [string]$SourceCheckout,
+    [string]$PatcherDirectory,
     [string]$BuildDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-if (-not $SourceCheckout) {
-    $SourceCheckout = Join-Path $repoRoot '_external\LE2BlackRestoration'
+if (-not $PatcherDirectory) {
+    $PatcherDirectory = Join-Path $repoRoot 'ASI\BlackRestoration'
 }
 if (-not $BuildDirectory) {
     $BuildDirectory = Join-Path $repoRoot '_tools\shader-tool-build'
 }
-$patcherDirectory = Join-Path $SourceCheckout 'BlackRestoration'
-if (-not (Test-Path -LiteralPath (Join-Path $patcherDirectory 'DxbcPatcher.cpp'))) {
-    throw "DxbcPatcher.cpp was not found. Clone https://github.com/N7Steve/LE2BlackRestoration into $SourceCheckout"
+if (-not (Test-Path -LiteralPath (Join-Path $PatcherDirectory 'DxbcPatcher.cpp'))) {
+    throw "DxbcPatcher.cpp was not found in $PatcherDirectory"
 }
 
-cmake -S (Join-Path $PSScriptRoot 'shader-tool') -B $BuildDirectory "-DLE2BR_PATCHER_DIR=$patcherDirectory"
+cmake -S (Join-Path $PSScriptRoot 'shader-tool') -B $BuildDirectory "-DLE2BR_PATCHER_DIR=$PatcherDirectory"
 if ($LASTEXITCODE -ne 0) { throw 'CMake configuration failed.' }
 cmake --build $BuildDirectory --config Release --target le2br-shader-tool
 if ($LASTEXITCODE -ne 0) { throw 'Shader tool build failed.' }

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$PackageDirectory,
-    [string]$SourceCheckout,
+    [string]$PatcherDirectory,
     [string]$BuildDirectory,
     [string]$ReportDirectory
 )
@@ -9,14 +9,14 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 if (-not $PackageDirectory) { $PackageDirectory = Join-Path $repoRoot 'LE2 Black Restoration' }
-if (-not $SourceCheckout) { $SourceCheckout = Join-Path $repoRoot '_external\LE2BlackRestoration' }
+if (-not $PatcherDirectory) { $PatcherDirectory = Join-Path $repoRoot 'ASI\BlackRestoration' }
 if (-not $BuildDirectory) { $BuildDirectory = Join-Path $repoRoot '_tools\shader-tool-build' }
 if (-not $ReportDirectory) {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $ReportDirectory = Join-Path $repoRoot "_tools\validation-$stamp"
 }
 
-$tool = & (Join-Path $PSScriptRoot 'Build-ShaderTool.ps1') -SourceCheckout $SourceCheckout -BuildDirectory $BuildDirectory | Select-Object -Last 1
+$tool = & (Join-Path $PSScriptRoot 'Build-ShaderTool.ps1') -PatcherDirectory $PatcherDirectory -BuildDirectory $BuildDirectory | Select-Object -Last 1
 if (-not (Test-Path -LiteralPath $tool)) { throw "Shader tool not found at $tool" }
 New-Item -ItemType Directory -Path $ReportDirectory | Out-Null
 
