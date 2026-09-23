@@ -33,7 +33,7 @@ LE2 Black Restoration/                 repository root
 
 Never move `_external` or `_tools` into the package or commit their contents. In particular, do not vendor nested Git repositories, compiler binaries, LExASIs, ME3TweaksModManager, ME3TweaksCore, build directories, caches, deployment archives, PDB/OBJ/LIB/DLL/ASI files, or Mod Manager deployment output.
 
-The inspected package has 187 files / 10,460,105 bytes: 160 `.m3gs` files / 1,250,000 bytes, 12 INIs, 8 TLKs, one `Mount.dlc`, five 1720×720 PNG preset previews / 9,083,234 bytes, and one 1160×94 PNG banner / 105,515 bytes. There is no ASI in the primary package.
+The inspected package has 187 files / 10,460,121 bytes: 160 `.m3gs` files / 1,250,000 bytes, 12 INIs, 8 TLKs, one `Mount.dlc`, five 1720×720 PNG preset previews / 9,083,234 bytes, and one 1160×94 PNG banner / 105,515 bytes. There is no ASI in the primary package.
 
 ## Public package and installer
 
