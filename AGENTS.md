@@ -33,22 +33,22 @@ LE2 Black Restoration/                 repository root
 
 Never move `_external` or `_tools` into the package or commit their contents. In particular, do not vendor nested Git repositories, compiler binaries, LExASIs, ME3TweaksModManager, ME3TweaksCore, build directories, caches, deployment archives, PDB/OBJ/LIB/DLL/ASI files, or Mod Manager deployment output.
 
-The inspected package has 182 files / 7,145,089 bytes: 160 `.m3gs` files / 1,250,000 bytes, 12 INIs, 8 TLKs, one `Mount.dlc`, and one PNG preview / 5,874,553 bytes. There is no ASI in the primary package.
+The inspected package has 187 files / 10,460,105 bytes: 160 `.m3gs` files / 1,250,000 bytes, 12 INIs, 8 TLKs, one `Mount.dlc`, five 1720×720 PNG preset previews / 9,083,234 bytes, and one 1160×94 PNG banner / 105,515 bytes. There is no ASI in the primary package.
 
 ## Public package and installer
 
 The main DLC package must work without an ASI. The optional ASI is an advanced, separately distributed runtime-tuning component and is not a dependency of the Nexus package. Do not add an ASI manifest dependency to the DLC.
 
-`moddesc.ini` uses `cmmver=9.2`, one `OptionGroup=Preset`, and five mutually exclusive `OP_ADD_FOLDERFILES_TO_CUSTOMDLC` alternatives. Exactly one item is checked by default: `IPS-SDR: Reference (Recommended)`. Current ME3Tweaks source confirms that OptionGroup is mutually exclusive, must contain exactly one default, and M3GS requires ModDesc 9.2. Each option may reference a PNG/JPG under `M3Images` with `ImageAssetName` plus the required `ImageHeight`; Mod Manager exposes it as a hover tooltip from the image icon, not as an inline gallery. Until dedicated comparisons exist, all five options use `M3Images/modded.png` at height 300.
+`moddesc.ini` uses `cmmver=9.2`, one `OptionGroup=Preset`, and five mutually exclusive `OP_ADD_FOLDERFILES_TO_CUSTOMDLC` alternatives. Exactly one item is checked by default: `SDR: Reference (Recommended)`. Current ME3Tweaks source confirms that OptionGroup is mutually exclusive, must contain exactly one default, and M3GS requires ModDesc 9.2. Each option references its dedicated 1720×720 PNG under `M3Images` with `ImageAssetName` and `ImageHeight=300`; Mod Manager exposes it as a hover tooltip from the image icon, not as an inline gallery. The installer header uses the parser's case-sensitive `bannerimagename=banner.png` key; the 1160×94 asset exactly matches Mod Manager's required 580:47 aspect ratio.
 
 The five choices are:
 
 | Installer choice | Purpose |
 | --- | --- |
-| IPS-SDR: Reference (Recommended) | Recommended default for standard SDR LCD/IPS displays. |
-| IPS-SDR: Stronger | Stronger SDR near-black recovery/separation. |
-| OLED/HDR: Reference | Reference tuning for OLED and HDR output. |
-| OLED/HDR: Stronger | Stronger OLED/HDR near-black recovery/separation. |
+| SDR: Reference (Recommended) | Recommended for standard SDR play. |
+| SDR: Stronger | Stronger near-black recovery for SDR play. |
+| HDR: Reference | For in-game HDR on an HDR-enabled display; calibrated for the game's HDR output. |
+| HDR: Stronger | Stronger recovery for in-game HDR on an HDR-enabled display. |
 | Legacy: Original ME2 Black Crush Fix | Static, conservative emulation of the historical original-ME2 fix; not the modern curve. |
 
 ## Frozen modern shader design
@@ -78,7 +78,7 @@ Each set totals 250,000 bytes and has the same filename, size, container, SHEX, 
 
 The checked-in `DLC_MOD_LE2BlackRestoration/Preset_*.ini` files are authoritative. Their currently validated values are:
 
-| Parameter | IPS Ref | IPS Stronger | OLED/HDR Ref | OLED/HDR Stronger |
+| Parameter | SDR Ref | SDR Stronger | HDR Ref | HDR Stronger |
 | --- | ---: | ---: | ---: | ---: |
 | ShadowBoost | 0 | 0 | 0 | 0 |
 | ShadowRange | 0.026 | 0.026 | 0.030 | 0.030 |
@@ -89,7 +89,7 @@ The checked-in `DLC_MOD_LE2BlackRestoration/Preset_*.ini` files are authoritativ
 | PureBlackProtection | 0.0005 | 0.0005 | 0.0007 | 0.0007 |
 | BlackFloorLift | 0 | 0 | 0 | 0 |
 
-The existing patcher reproduces all 128 modern checked-in M3GS files byte-for-byte from the IPS-SDR Reference set plus the corresponding preset INI.
+The existing patcher reproduces all 128 modern checked-in M3GS files byte-for-byte from the SDR Reference set plus the corresponding preset INI.
 
 ## Legacy emulation
 
@@ -111,9 +111,9 @@ Generate a modern preset into a new/empty ignored directory (never directly over
 
 ```powershell
 ./scripts/Generate-PresetShaders.ps1 `
-  -BaselineDirectory './LE2 Black Restoration/InstallOptions/IPS_SDR_Reference/CookedPCConsole' `
-  -PresetIni './LE2 Black Restoration/DLC_MOD_LE2BlackRestoration/Preset_OLED_HDR_Reference.ini' `
-  -OutputDirectory './_tools/generated/OLED_HDR_Reference'
+  -BaselineDirectory './LE2 Black Restoration/InstallOptions/SDR_Reference/CookedPCConsole' `
+  -PresetIni './LE2 Black Restoration/DLC_MOD_LE2BlackRestoration/Preset_HDR_Reference.ini' `
+  -OutputDirectory './_tools/generated/HDR_Reference'
 ```
 
 Validate the complete release and emit SHA-256/reproduction CSV reports under `_tools`:
@@ -145,7 +145,7 @@ ME3TweaksCore scans only top-level `GlobalShader-*.m3gs` files in each installed
 
 Run `scripts/Validate-Release.ps1`, then confirm all of the following:
 
-1. `moddesc.ini` remains at feature level 9.2, contains five members in one Preset OptionGroup, has only IPS-SDR Reference checked by default, and every referenced `M3Images` asset exists.
+1. `moddesc.ini` remains at feature level 9.2, contains five members in one Preset OptionGroup, has only SDR Reference checked by default, every referenced `M3Images` asset exists, and the banner retains its required 580:47 aspect ratio.
 2. No ASI, manifest dependency, build product, nested repository, or deployment archive is inside the package/tracked tree.
 3. Every preset has exactly 32 correctly named shaders with indices `65-88,97-104`; all five filename/index sets are identical.
 4. All 160 DXBC checksums are valid and per-index container/SHEX/STAT invariants match across presets.
@@ -158,7 +158,7 @@ Run `scripts/Validate-Release.ps1`, then confirm all of the following:
 
 ## Known discrepancies and unresolved work
 
-- **Optional ASI defaults are aligned but need a full ASI rebuild/regression test.** The integrated source now uses the public IPS-SDR Reference values (`NearBlackDetail=0.1`, `NearBlackRecovery=0.0045`). Rebuild through LExASIs and repeat runtime/hotkey/profile tests before distributing the ASI.
+- **Optional ASI defaults are aligned but need a full ASI rebuild/regression test.** The integrated source now uses the public SDR Reference values (`NearBlackDetail=0.1`, `NearBlackRecovery=0.0045`). Rebuild through LExASIs and repeat runtime/hotkey/profile tests before distributing the ASI.
 - **Optional ASI is not trusted-release ready.** `SharedVersion.h` still has placeholder `ASI_GROUP_ID_RC 0`; ME3Tweaks must assign the real GroupID before a trusted ASI build.
 - **Legacy equivalence is unproved.** The observed LE2 implementation is a conservative visual emulation, not a demonstrated literal removal of an LE2 `-0.004` operation.
 - **Official packaging/in-game validation remains manual.** The source/bytecode checks do not replace clean Mod Manager deployment and gameplay testing.

@@ -55,11 +55,11 @@ private:
     std::filesystem::file_time_type lastWrite_{};
     bool haveLastWrite_ = false;
 
-    // tunedParams_ is never destroyed by IPS-SDR comparison or bypass, so the
+    // tunedParams_ is never destroyed by SDR comparison or bypass, so the
     // comparison hotkey can always return to the user's current tuning.
     HotkeyConfig hotkeys_{};
     bool fixEnabled_ = true;
-    bool compareIpsSdr_ = false;
+    bool compareSdr_ = false;
     blackcrush::Parameters tunedParams_{};
     bool decreaseDown_ = false;
     bool increaseDown_ = false;

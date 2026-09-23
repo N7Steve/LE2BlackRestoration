@@ -2,7 +2,7 @@
 ; LE2 Black Restoration by N7SteveMods.
 ; Save this file while the game is running to hot-reload it.
 ;
-; Any restoration setting omitted from this section falls back to the IPS-SDR
+; Any restoration setting omitted from this section falls back to the SDR
 ; release default shown below. A setting that is present but invalid is rejected,
 ; and the previously active configuration remains in use.
 ;
@@ -17,7 +17,7 @@
 ; NearBlackRange       = How far upward the near-black shaping acts. Range: 0.005 .. 0.100
 ;
 ; ADVANCED SHADOW CONTROLS
-; ShadowBoost          = Luminance-based shadow recovery. IPS-SDR keeps this at 0.
+; ShadowBoost          = Luminance-based shadow recovery. SDR keeps this at 0.
 ;                        Range: 0.0 .. 4.0
 ; ShadowRange          = How far upward from black ShadowBoost is allowed to act. Range: 0.005 .. 0.100
 ; ShadowFade           = How quickly ShadowBoost fades as pixels get brighter.
@@ -26,7 +26,7 @@
 ; BlackFloorLift       = Advanced true black-floor lift. Keep 0.0 to guarantee pre-LUT 0 -> 0.
 ;                        Values > 0 deliberately raise absolute black. Range: 0.0 .. 0.020
 ;
-; IPS-SDR release defaults. These preserve absolute black with BlackFloorLift=0.
+; SDR release defaults. These preserve absolute black with BlackFloorLift=0.
 ShadowBoost=0.0
 ShadowRange=0.026
 ShadowFade=3
@@ -82,8 +82,8 @@ BypassKey=F9
 ; Ctrl + Shift + Alt + DecreaseKey / IncreaseKey = ShadowFade -/+ 1
 ;
 ; ACTIONS
-; ActionKey                                     = reset CUSTOM tuning to IPS-SDR defaults
-; Shift + ActionKey                             = toggle CUSTOM <-> IPS-SDR comparison
+; ActionKey                                     = reset CUSTOM tuning to SDR defaults
+; Shift + ActionKey                             = toggle CUSTOM <-> SDR comparison
 ;                                                 (CUSTOM values are preserved)
 ; Ctrl + ActionKey                              = save current CUSTOM tuning to
 ;                                                 LE2BlackRestoration_Profile.ini

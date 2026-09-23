@@ -24,4 +24,4 @@ Expected output:
 Build/Release/LE2BlackRestoration.asi
 ```
 
-The integrated defaults match the public IPS-SDR Reference preset. Before distributing the ASI, replace the placeholder `ASI_GROUP_ID_RC 0` in `SharedVersion.h` with the GroupID assigned by ME3Tweaks, rebuild, and repeat runtime/configuration regression tests.
+The integrated defaults match the public SDR Reference preset. Before distributing the ASI, replace the placeholder `ASI_GROUP_ID_RC 0` in `SharedVersion.h` with the GroupID assigned by ME3Tweaks, rebuild, and repeat runtime/configuration regression tests.

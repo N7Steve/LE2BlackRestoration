@@ -1,6 +1,10 @@
 # LE2 Black Restoration
 
-**LE2 Black Restoration** is a native black-crush correction and near-black detail restoration mod for Mass Effect 2 Legendary Edition, by **N7SteveMods**. This is the main repository for the complete mod: the ME3Tweaks Mod Manager package, reproducible M3GS tooling, release documentation, and optional ASI source.
+**LE2 Black Restoration** is a native black-crush correction and near-black detail restoration mod for Mass Effect 2 Legendary Edition, by **N7SteveMods**. Its goal is to recover separation and texture in the darkest visible tones without lifting absolute black or turning the effect into a general exposure, gamma, or contrast adjustment. This is the main repository for the complete mod: the ME3Tweaks Mod Manager package, reproducible M3GS tooling, release documentation, and optional ASI source.
+
+The project is inspired by the **Original ME2 Black Crush Fix** for the classic release of Mass Effect 2. The included Legacy option is a conservative visual emulation of that historical fix, not a claimed exact shader port to Legendary Edition; the modern Black Restoration presets use a purpose-built near-black curve instead.
+
+Use an **HDR** preset only when HDR is enabled in Mass Effect 2 Legendary Edition and you are playing on an HDR-capable display with HDR active. Those presets were calibrated with the game's HDR output enabled. For every other setup—including an HDR-capable display being used in SDR mode—choose an **SDR** preset.
 
 The mod uses targeted M3GS overrides for the 32 `FSFXUberPostProcessBlendPixelShader` permutations. The companion ASI hooks D3D11 shader creation/binding, recognizes only the expected Black Restoration shader topology, and reparameterizes that topology in-place at runtime.
 
@@ -19,7 +23,7 @@ _tools/                    ignored local builds and validation reports
 
 The primary package works without the ASI. The ASI is an optional advanced component for live tuning, hotkeys, profiles, and comparison/bypass controls.
 
-## IPS-SDR defaults
+## SDR defaults
 
 The built-in release defaults preserve absolute black with `BlackFloorLift=0`:
 
@@ -34,7 +38,7 @@ PureBlackProtection=0.0005
 BlackFloorLift=0.0
 ```
 
-Missing restoration keys in the runtime INI inherit these IPS-SDR defaults. Present but invalid values are rejected so the last valid configuration remains active.
+Missing restoration keys in the runtime INI inherit these SDR defaults. Present but invalid values are rejected so the last valid configuration remains active.
 
 ## Runtime configuration and hotkeys
 
@@ -44,7 +48,7 @@ The ASI reads:
 BIOGame/DLC/DLC_MOD_LE2BlackRestoration/LE2BlackRestoration.ini
 ```
 
-The INI supports hot reload, runtime tuning, IPS-SDR comparison, profile save/load, and bypass. Hotkeys are enabled by default but can be disabled or remapped through `[Hotkeys]`.
+The INI supports hot reload, runtime tuning, SDR comparison, profile save/load, and bypass. Hotkeys are enabled by default but can be disabled or remapped through `[Hotkeys]`.
 
 The default base keys are:
 

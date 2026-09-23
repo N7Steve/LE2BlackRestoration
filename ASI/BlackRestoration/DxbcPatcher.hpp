@@ -43,7 +43,7 @@ public:
 
 // Structural matcher reference values. These are used only to build a safe
 // matcher template; every user-facing immediate is wildcarded. Runtime defaults
-// are IPS-SDR and are defined independently in Config.cpp.
+// are SDR and are defined independently in Config.cpp.
 constexpr double kBaseShadowBoost = 2.0;
 constexpr double kBaseShadowRange = 0.026;
 constexpr std::uint32_t kBaseShadowFade = 4;

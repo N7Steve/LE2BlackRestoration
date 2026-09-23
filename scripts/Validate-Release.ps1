@@ -23,29 +23,66 @@ New-Item -ItemType Directory -Path $ReportDirectory | Out-Null
 $installOptions = Join-Path $PackageDirectory 'InstallOptions'
 $presetIniRoot = Join-Path $PackageDirectory 'DLC_MOD_LE2BlackRestoration'
 $modernPresets = @(
-    'IPS_SDR_Reference',
-    'IPS_SDR_Stronger',
-    'OLED_HDR_Reference',
-    'OLED_HDR_Stronger'
+    'SDR_Reference',
+    'SDR_Stronger',
+    'HDR_Reference',
+    'HDR_Stronger'
 )
 $legacyPreset = 'Original_ME2_Black_Crush_Fix_Legacy_Emulation'
 $allPresets = $modernPresets + $legacyPreset
-$baseline = Join-Path $installOptions 'IPS_SDR_Reference\CookedPCConsole'
+$baseline = Join-Path $installOptions 'SDR_Reference\CookedPCConsole'
 
 $moddesc = Get-Content -LiteralPath (Join-Path $PackageDirectory 'moddesc.ini') -Raw
 if ($moddesc -notmatch '(?m)^cmmver=9\.2\s*$') { throw 'moddesc.ini does not declare cmmver=9.2.' }
 if ([regex]::Matches($moddesc, 'OptionGroup=Preset').Count -ne 5) { throw 'Expected five members in the Preset option group.' }
 if ([regex]::Matches($moddesc, 'CheckedByDefault=true').Count -ne 1) { throw 'Expected exactly one CheckedByDefault=true option.' }
-if ($moddesc -notmatch 'FriendlyName="IPS-SDR: Reference \(Recommended\)"[^\r\n]*CheckedByDefault=true') {
-    throw 'IPS-SDR Reference is not the sole default option.'
+if ($moddesc -notmatch 'FriendlyName="SDR: Reference \(Recommended\)"[^\r\n]*CheckedByDefault=true') {
+    throw 'SDR Reference is not the sole default option.'
 }
-if ([regex]::Matches($moddesc, 'ImageAssetName=modded\.png').Count -ne 5 -or
-    [regex]::Matches($moddesc, 'ImageHeight=300').Count -ne 5) {
-    throw 'Expected all five preset options to use the 300px modded.png preview.'
+$expectedPreviewImages = @(
+    'SDR_Reference.png',
+    'SDR_Stronger.png',
+    'HDR_Reference.png',
+    'HDR_Stronger.png',
+    'Legacy_Emulation.png'
+)
+if ([regex]::Matches($moddesc, 'ImageHeight=300').Count -ne $expectedPreviewImages.Count) {
+    throw 'Expected all five preset options to use 300px preview images.'
 }
-$previewImage = Join-Path $PackageDirectory 'M3Images\modded.png'
-if (-not (Test-Path -LiteralPath $previewImage -PathType Leaf)) {
-    throw 'Preset preview image M3Images/modded.png is missing.'
+Add-Type -AssemblyName System.Drawing
+foreach ($previewName in $expectedPreviewImages) {
+    if ([regex]::Matches($moddesc, "ImageAssetName=$([regex]::Escape($previewName))").Count -ne 1) {
+        throw "Expected exactly one installer option to reference $previewName."
+    }
+    $previewImage = Join-Path $PackageDirectory "M3Images\$previewName"
+    if (-not (Test-Path -LiteralPath $previewImage -PathType Leaf)) {
+        throw "Preset preview image M3Images/$previewName is missing."
+    }
+    $previewBitmap = [System.Drawing.Image]::FromFile($previewImage)
+    try {
+        if ($previewBitmap.Width -ne 1720 -or $previewBitmap.Height -ne 720) {
+            throw "Preset preview $previewName must be 1720x720; found $($previewBitmap.Width)x$($previewBitmap.Height)."
+        }
+    }
+    finally {
+        $previewBitmap.Dispose()
+    }
+}
+if ($moddesc -notmatch '(?m)^bannerimagename=banner\.png\s*$') {
+    throw 'moddesc.ini does not use the case-sensitive bannerimagename key for M3Images/banner.png.'
+}
+$bannerImage = Join-Path $PackageDirectory 'M3Images\banner.png'
+if (-not (Test-Path -LiteralPath $bannerImage -PathType Leaf)) {
+    throw 'Banner image M3Images/banner.png is missing.'
+}
+$bannerBitmap = [System.Drawing.Image]::FromFile($bannerImage)
+try {
+    if ($bannerBitmap.Width * 47 -ne $bannerBitmap.Height * 580) {
+        throw "Banner image must use the 580:47 aspect ratio; found $($bannerBitmap.Width)x$($bannerBitmap.Height)."
+    }
+}
+finally {
+    $bannerBitmap.Dispose()
 }
 if (Get-ChildItem -LiteralPath $PackageDirectory -Recurse -File | Where-Object Extension -in '.asi', '.dll', '.pdb', '.obj') {
     throw 'The primary package contains optional ASI/build artifacts.'

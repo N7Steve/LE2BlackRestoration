@@ -293,7 +293,7 @@ std::optional<blackcrush::Parameters> ConfigManager::ParseFile(
         return ReleaseDefaultParameters();
     }
 
-    // Missing keys deliberately inherit IPS-SDR release defaults. A key that is
+    // Missing keys deliberately inherit SDR release defaults. A key that is
     // present but malformed is rejected instead of silently changing behavior.
     auto p = ReleaseDefaultParameters();
     bool valid = true;
@@ -390,7 +390,7 @@ bool ConfigManager::Initialize() {
     const auto initial = ParseFile(path_, false);
     const auto initialHotkeys = ParseHotkeys(path_);
     if (!initial || !initialHotkeys) {
-        LEASI_ERROR(L"invalid initial config {}; using IPS-SDR defaults and default hotkeys", path_.c_str());
+        LEASI_ERROR(L"invalid initial config {}; using SDR defaults and default hotkeys", path_.c_str());
         current_.params = ReleaseDefaultParameters();
         hotkeys_ = DefaultHotkeys();
     } else {
@@ -401,7 +401,7 @@ bool ConfigManager::Initialize() {
     current_.version = 1;
     tunedParams_ = current_.params;
     fixEnabled_ = true;
-    compareIpsSdr_ = false;
+    compareSdr_ = false;
     ResetHotkeyState();
 
     std::error_code ec;
@@ -456,7 +456,7 @@ bool ConfigManager::TryReload() {
     tunedParams_ = *parsed;
     current_.params = *parsed;
     fixEnabled_ = true;
-    compareIpsSdr_ = false;
+    compareSdr_ = false;
     ResetHotkeyState();
     ++current_.version;
     LEASI_INFO(
@@ -542,7 +542,7 @@ void ConfigManager::ApplyHotkeyParameters(
     tunedParams_ = safe;
     current_.params = safe;
     fixEnabled_ = true;
-    compareIpsSdr_ = false;
+    compareSdr_ = false;
     ++current_.version;
     LEASI_INFO(
         "hotkey {} -> v{}: ShadowBoost={} ShadowRange={} ShadowFade={} NearBlackRange={} NearBlackDetail={} NearBlackRecovery={} PureBlackProtection={} BlackFloorLift={}",
@@ -600,19 +600,19 @@ void ConfigManager::PollHotkeys() {
     if (pressBypass && shift && !ctrl && !alt) {
         std::scoped_lock lock(mutex_);
         if (fixEnabled_) {
-            current_.params = NeutralParameters(compareIpsSdr_ ? ReleaseDefaultParameters() : tunedParams_);
+            current_.params = NeutralParameters(compareSdr_ ? ReleaseDefaultParameters() : tunedParams_);
             fixEnabled_ = false;
             ++current_.version;
             LEASI_INFO("hotkey Shift+{} -> effect OFF v{}", KeyName(hotkeys.bypassKey), current_.version);
         } else {
-            current_.params = compareIpsSdr_ ? ReleaseDefaultParameters() : tunedParams_;
+            current_.params = compareSdr_ ? ReleaseDefaultParameters() : tunedParams_;
             fixEnabled_ = true;
             ++current_.version;
             LEASI_INFO(
                 "hotkey Shift+{} -> effect ON v{} ({})",
                 KeyName(hotkeys.bypassKey),
                 current_.version,
-                compareIpsSdr_ ? "IPS-SDR comparison" : "custom tuning");
+                compareSdr_ ? "SDR comparison" : "custom tuning");
         }
         return;
     }
@@ -629,19 +629,19 @@ void ConfigManager::PollHotkeys() {
         if (shift && !ctrl && !alt) {
             std::scoped_lock lock(mutex_);
             fixEnabled_ = true;
-            if (compareIpsSdr_) {
+            if (compareSdr_) {
                 current_.params = tunedParams_;
-                compareIpsSdr_ = false;
+                compareSdr_ = false;
                 ++current_.version;
                 LEASI_INFO(
-                    "hotkey Shift+{} -> CUSTOM tuning v{} (IPS-SDR comparison OFF)",
+                    "hotkey Shift+{} -> CUSTOM tuning v{} (SDR comparison OFF)",
                     KeyName(hotkeys.actionKey), current_.version);
             } else {
                 current_.params = ReleaseDefaultParameters();
-                compareIpsSdr_ = true;
+                compareSdr_ = true;
                 ++current_.version;
                 LEASI_INFO(
-                    "hotkey Shift+{} -> IPS-SDR v{} (custom tuning preserved)",
+                    "hotkey Shift+{} -> SDR v{} (custom tuning preserved)",
                     KeyName(hotkeys.actionKey), current_.version);
             }
             return;
@@ -651,10 +651,10 @@ void ConfigManager::PollHotkeys() {
             fixEnabled_ = true;
             tunedParams_ = ReleaseDefaultParameters();
             current_.params = tunedParams_;
-            compareIpsSdr_ = false;
+            compareSdr_ = false;
             ++current_.version;
             LEASI_INFO(
-                "hotkey {} -> reset custom tuning to IPS-SDR v{}",
+                "hotkey {} -> reset custom tuning to SDR v{}",
                 KeyName(hotkeys.actionKey), current_.version);
             return;
         }
