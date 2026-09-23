@@ -18,6 +18,7 @@ LE2 Black Restoration/                 repository root
 │  └─ BlackRestoration/                optional ASI source and example INI
 ├─ LE2 Black Restoration/             real ME3Tweaks Mod Manager package
 │  ├─ moddesc.ini
+│  ├─ M3Images/                         installer preview images
 │  ├─ DLC_MOD_LE2BlackRestoration/
 │  │  ├─ CookedPCConsole/             BIOEngine.ini, Mount.dlc, eight TLKs
 │  │  └─ Preset_*.ini                 authoritative preset references
@@ -32,23 +33,23 @@ LE2 Black Restoration/                 repository root
 
 Never move `_external` or `_tools` into the package or commit their contents. In particular, do not vendor nested Git repositories, compiler binaries, LExASIs, ME3TweaksModManager, ME3TweaksCore, build directories, caches, deployment archives, PDB/OBJ/LIB/DLL/ASI files, or Mod Manager deployment output.
 
-The inspected package has 181 files / 1,270,167 bytes: 160 `.m3gs` files / 1,250,000 bytes, 12 INIs, 8 TLKs, and one `Mount.dlc`. There is no ASI in the primary package.
+The inspected package has 182 files / 7,145,089 bytes: 160 `.m3gs` files / 1,250,000 bytes, 12 INIs, 8 TLKs, one `Mount.dlc`, and one PNG preview / 5,874,553 bytes. There is no ASI in the primary package.
 
 ## Public package and installer
 
 The main DLC package must work without an ASI. The optional ASI is an advanced, separately distributed runtime-tuning component and is not a dependency of the Nexus package. Do not add an ASI manifest dependency to the DLC.
 
-`moddesc.ini` uses `cmmver=9.2`, one `OptionGroup=DisplayPreset`, and five mutually exclusive `OP_ADD_FOLDERFILES_TO_CUSTOMDLC` alternatives. Exactly one item is checked by default: `IPS-SDR - Reference`. Current ME3Tweaks source confirms that OptionGroup is mutually exclusive, must contain exactly one default, and M3GS requires ModDesc 9.2.
+`moddesc.ini` uses `cmmver=9.2`, one `OptionGroup=Preset`, and five mutually exclusive `OP_ADD_FOLDERFILES_TO_CUSTOMDLC` alternatives. Exactly one item is checked by default: `IPS-SDR: Reference (Recommended)`. Current ME3Tweaks source confirms that OptionGroup is mutually exclusive, must contain exactly one default, and M3GS requires ModDesc 9.2. Each option may reference a PNG/JPG under `M3Images` with `ImageAssetName` plus the required `ImageHeight`; Mod Manager exposes it as a hover tooltip from the image icon, not as an inline gallery. Until dedicated comparisons exist, all five options use `M3Images/modded.png` at height 300.
 
 The five choices are:
 
 | Installer choice | Purpose |
 | --- | --- |
-| IPS-SDR - Reference | Recommended default for standard SDR LCD/IPS displays. |
-| IPS-SDR - Stronger Near-Black | Stronger SDR near-black recovery/separation. |
-| OLED/HDR - Reference | Reference tuning for OLED and HDR output. |
-| OLED/HDR - Stronger Near-Black | Stronger OLED/HDR near-black recovery/separation. |
-| Original ME2 Black Crush Fix - Legacy Emulation | Static, conservative emulation of the historical original-ME2 fix; not the modern curve. |
+| IPS-SDR: Reference (Recommended) | Recommended default for standard SDR LCD/IPS displays. |
+| IPS-SDR: Stronger | Stronger SDR near-black recovery/separation. |
+| OLED/HDR: Reference | Reference tuning for OLED and HDR output. |
+| OLED/HDR: Stronger | Stronger OLED/HDR near-black recovery/separation. |
+| Legacy: Original ME2 Black Crush Fix | Static, conservative emulation of the historical original-ME2 fix; not the modern curve. |
 
 ## Frozen modern shader design
 
@@ -144,7 +145,7 @@ ME3TweaksCore scans only top-level `GlobalShader-*.m3gs` files in each installed
 
 Run `scripts/Validate-Release.ps1`, then confirm all of the following:
 
-1. `moddesc.ini` remains at feature level 9.2, contains five members in one DisplayPreset OptionGroup, and has only IPS-SDR Reference checked by default.
+1. `moddesc.ini` remains at feature level 9.2, contains five members in one Preset OptionGroup, has only IPS-SDR Reference checked by default, and every referenced `M3Images` asset exists.
 2. No ASI, manifest dependency, build product, nested repository, or deployment archive is inside the package/tracked tree.
 3. Every preset has exactly 32 correctly named shaders with indices `65-88,97-104`; all five filename/index sets are identical.
 4. All 160 DXBC checksums are valid and per-index container/SHEX/STAT invariants match across presets.

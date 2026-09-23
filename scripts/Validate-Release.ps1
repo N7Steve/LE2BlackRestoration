@@ -34,10 +34,18 @@ $baseline = Join-Path $installOptions 'IPS_SDR_Reference\CookedPCConsole'
 
 $moddesc = Get-Content -LiteralPath (Join-Path $PackageDirectory 'moddesc.ini') -Raw
 if ($moddesc -notmatch '(?m)^cmmver=9\.2\s*$') { throw 'moddesc.ini does not declare cmmver=9.2.' }
-if ([regex]::Matches($moddesc, 'OptionGroup=DisplayPreset').Count -ne 5) { throw 'Expected five DisplayPreset options.' }
+if ([regex]::Matches($moddesc, 'OptionGroup=Preset').Count -ne 5) { throw 'Expected five members in the Preset option group.' }
 if ([regex]::Matches($moddesc, 'CheckedByDefault=true').Count -ne 1) { throw 'Expected exactly one CheckedByDefault=true option.' }
-if ($moddesc -notmatch 'FriendlyName="IPS-SDR - Reference"[^\r\n]*CheckedByDefault=true') {
+if ($moddesc -notmatch 'FriendlyName="IPS-SDR: Reference \(Recommended\)"[^\r\n]*CheckedByDefault=true') {
     throw 'IPS-SDR Reference is not the sole default option.'
+}
+if ([regex]::Matches($moddesc, 'ImageAssetName=modded\.png').Count -ne 5 -or
+    [regex]::Matches($moddesc, 'ImageHeight=300').Count -ne 5) {
+    throw 'Expected all five preset options to use the 300px modded.png preview.'
+}
+$previewImage = Join-Path $PackageDirectory 'M3Images\modded.png'
+if (-not (Test-Path -LiteralPath $previewImage -PathType Leaf)) {
+    throw 'Preset preview image M3Images/modded.png is missing.'
 }
 if (Get-ChildItem -LiteralPath $PackageDirectory -Recurse -File | Where-Object Extension -in '.asi', '.dll', '.pdb', '.obj') {
     throw 'The primary package contains optional ASI/build artifacts.'
