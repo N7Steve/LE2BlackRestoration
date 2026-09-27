@@ -25,3 +25,14 @@ Build/Release/LE2BlackRestoration.asi
 ```
 
 The integrated defaults match the public SDR Reference preset. Before distributing the ASI, replace the placeholder `ASI_GROUP_ID_RC 0` in `SharedVersion.h` with the GroupID assigned by ME3Tweaks, rebuild, and repeat runtime/configuration regression tests.
+
+## Hook regression tests
+
+Run `./scripts/Test-AsiHooks.ps1` from the repository root on Windows with
+Visual Studio Build Tools and the Windows SDK. The harness executes the production
+hook code with real D3D11 WARP shader objects for all 32 permutations. It substitutes
+the configuration snapshot provider and SPI/logging services to force capture/reload
+interleavings and shader creation failures. It checks that late captures retain the
+published generation's parameters, complete reloads advance the version together,
+failed operations preserve the previous generation, and Legacy is left untouched.
+These tests do not replace in-game hotkey, profile, bypass, and comparison checks.

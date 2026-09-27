@@ -57,6 +57,7 @@ struct TargetShader {
 
 struct Generation {
     std::uint64_t configVersion = 0;
+    blackcrush::Parameters params{};
     std::unordered_map<ID3D11PixelShader*, ComPtr<ID3D11PixelShader>> replacements;
 };
 
@@ -141,6 +142,7 @@ void RebuildForConfig(const ConfigSnapshot& config) {
 
     auto next = std::make_shared<Generation>();
     next->configVersion = config.version;
+    next->params = config.params;
     next->replacements.reserve(targets.size());
 
     try {
@@ -202,18 +204,28 @@ HRESULT STDMETHODCALLTYPE CreatePixelShaderHook(
             // Same lock ordering as RebuildForConfig: reload -> targets. This prevents
             // a config reload and late shader capture from publishing generations over each other.
             std::scoped_lock reloadLock(g_reloadMutex);
+            auto previous = LoadGeneration();
+            // A late capture must join the published generation, even if the
+            // watcher has accepted newer parameters or a rebuild ran while we
+            // created the initial replacement. Only a complete rebuild may
+            // advance an existing generation's version.
+            if (previous->configVersion != 0 && previous->configVersion != current.version) {
+                replacement = BuildReplacement(target, previous->params);
+            }
+            auto next = std::make_shared<Generation>(*previous);
+            if (previous->configVersion == 0) {
+                next->configVersion = current.version;
+                next->params = current.params;
+            }
+            next->replacements[*outShader] = std::move(replacement);
             {
                 std::scoped_lock targetsLock(g_targetsMutex);
                 const auto [it, inserted] = g_targets.emplace(*outShader, std::move(target));
                 if (!inserted) return hr;
             }
 
-            auto previous = LoadGeneration();
-            auto next = std::make_shared<Generation>(*previous);
-            next->configVersion = current.version;
-            next->replacements[*outShader] = std::move(replacement);
             PublishGeneration(next);
-            g_appliedConfigVersion.store(current.version, std::memory_order_release);
+            g_appliedConfigVersion.store(next->configVersion, std::memory_order_release);
         }
 
         const auto count = g_targetCount.fetch_add(1, std::memory_order_acq_rel) + 1;
