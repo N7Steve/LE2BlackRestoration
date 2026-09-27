@@ -73,6 +73,8 @@ The tooling compiles a small wrapper around the same `DxbcPatcher` used by the A
 
 See `AGENTS.md` for the frozen shader invariants, preset definitions, Legacy emulation caveat, and official Mod Manager deployment checklist.
 
+For a source-level explanation of the hexadecimal bytecode, see the [DXBC patcher audit guide](ASI/DXBC-PATCHER.md). It maps the encoded instructions to assembly and equations, lists every permitted change, and explains recognition, checksum handling, and validation limits.
+
 ## Building the optional ASI
 
 This source is designed to build inside [ME3Tweaks/LExASIs](https://github.com/ME3Tweaks/LExASIs).

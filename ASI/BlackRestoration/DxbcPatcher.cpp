@@ -1,5 +1,9 @@
 #include "BlackRestoration/DxbcPatcher.hpp"
 
+// Audit guide: ../DXBC-PATCHER.md maps these DWORDs to assembly, equations,
+// wildcard positions and checksum rules. This is a parameter editor for an
+// already-restored shader, not an injector for arbitrary vanilla LE2 shaders.
+
 #include <algorithm>
 #include <bit>
 #include <cmath>
@@ -15,9 +19,12 @@ using Bytes = std::vector<std::uint8_t>;
 using Words = std::vector<std::uint32_t>;
 
 constexpr std::array<std::uint32_t, 3> kLumaWeightsBits{
+    // IEEE-754 float32 encodings of approximately (0.212671, 0.715160, 0.072169).
     0x3E59C66Du, 0x3F3714BAu, 0x3D93CD57u
 };
 
+// Standard MD5 compression rotation/round constants. DXBC uses that compression
+// function with its own final-block layout (see calculate_dxbc_checksum).
 constexpr std::array<std::uint32_t, 64> kMd5S = {
     7,12,17,22, 7,12,17,22, 7,12,17,22, 7,12,17,22,
     5,9,14,20, 5,9,14,20, 5,9,14,20, 5,9,14,20,
@@ -140,7 +147,8 @@ Bytes build_luma_shadow_block(double shadow_boost, double shadow_range, std::uin
         throw PatchError("shadow_fade must be in [1, 4]");
     }
 
-    // r3.x holds (L - ShadowRange), clamped so only values below the range survive.
+    // r3.w holds min(L - ShadowRange, 0). Destination token 0x00100082
+    // selects .w; source token 0x0010003A reads .w (not .x).
     // We have three same-size MUL slots. By replacing unused r3 sources with immediate 1.0,
     // the same DXBC topology can realize integer powers 1..4 without changing instruction count.
     // Odd powers need a negative coefficient because (L-T)^p = -(T-L)^p for odd p.
@@ -158,36 +166,47 @@ Bytes build_luma_shadow_block(double shadow_boost, double shadow_range, std::uin
     const bool stage2 = shadow_fade >= 3u;
     const bool stage3 = shadow_fade >= 4u;
 
+    // Encoded assembly, in order: dp3, add, min, mul, mul, mul, mul, mad.
+    // Each row group starts with an opcode/length token. Operands and literal
+    // values follow it; hex words are D3D token encodings, not file addresses.
     Words words = {
+        // dp3 r3.w, r0.xyzx, l(luma weights, 0)
         0x0A000010u, 0x00100082u, 0x00000003u,
         0x00100246u, 0x00000000u,
         0x00004002u,
         kLumaWeightsBits[0], kLumaWeightsBits[1], kLumaWeightsBits[2], 0x00000000u,
 
+        // add r3.w, r3.w, l(-ShadowRange)
         0x07000000u, 0x00100082u, 0x00000003u,
         0x0010003Au, 0x00000003u,
         0x00004001u, f32_bits(-shadow_range),
 
+        // min r3.w, r3.w, l(0)
         0x07000033u, 0x00100082u, 0x00000003u,
         0x0010003Au, 0x00000003u,
         0x00004001u, 0x00000000u,
 
+        // mul r4.w, r3.w, (r3.w or l(1)) -- exponent 1 or 2
         0x07000038u, 0x00100082u, 0x00000004u,
         0x0010003Au, 0x00000003u,
         source_token(stage1), source_value(stage1),
 
+        // mul r4.w, r4.w, (r3.w or l(1)) -- optional third power
         0x07000038u, 0x00100082u, 0x00000004u,
         0x0010003Au, 0x00000004u,
         source_token(stage2), source_value(stage2),
 
+        // mul r4.w, r4.w, (r3.w or l(1)) -- optional fourth power
         0x07000038u, 0x00100082u, 0x00000004u,
         0x0010003Au, 0x00000004u,
         source_token(stage3), source_value(stage3),
 
+        // mul r4.w, r4.w, l((-1)^fade * boost / range^fade)
         0x07000038u, 0x00100082u, 0x00000004u,
         0x0010003Au, 0x00000004u,
         0x00004001u, f32_bits(coeff),
 
+        // mad r0.xyz, r0.xyzx, r4.w, r0.xyzx -- rgb *= (1 + gain)
         0x09000032u, 0x00100072u, 0x00000000u,
         0x00100246u, 0x00000000u,
         0x0010003Au, 0x00000004u,
@@ -292,7 +311,9 @@ Bytes build_near_black_detail_block(
         0x00004002u,
         floor_bits, floor_bits, floor_bits, floor_bits,
 
-        // r4.xyz = (range-rgb)^2. Computing q after smoothstep lets us reuse r4.
+        // add r4.xyz, rgb, l(-range): first form rgb-range, then min(..., 0).
+        // Squaring that result gives max(range-rgb, 0)^2. The coefficients
+        // already contain 1/range^2, so this realizes q without a division.
         0x0A000000u, 0x00100072u, 0x00000004u,
         0x00100246u, 0x00000000u,
         0x00004002u,
@@ -464,6 +485,8 @@ BlockLocations find_modern_blocks(std::span<const std::uint8_t> blob) {
         throw PatchError(ss.str());
     }
 
+    // Skip the 8-byte chunk header and the 8-byte program version/length pair.
+    // Locations are discovered inside this stream, never hard-coded per file.
     const auto start = static_cast<std::size_t>(info.shex_offset) + 16u;
     const auto end = static_cast<std::size_t>(info.shex_offset) + 8u + info.shex_size;
     const auto shex = blob.subspan(start, end - start);
@@ -479,7 +502,10 @@ BlockLocations find_modern_blocks(std::span<const std::uint8_t> blob) {
         51u                   // ShadowBoost/range/fade coefficient
     };
 
-    // Only the user-facing immediates are wildcarded. Smoothstep constants,
+    // Near-black wildcards are only parameter immediates. Luma also permits
+    // three register/immediate source pairs to implement ShadowFade 1..4.
+    // The validators below restrict every wildcard to a supported encoding.
+    // Smoothstep constants,
     // opcodes, registers, masks and instruction lengths remain structural anchors.
     constexpr std::array<std::size_t, 19> kNearBlackWildcards{
         6u, 7u, 8u, 9u,          // 1 / PureBlackProtection
@@ -569,6 +595,8 @@ void validate_parameters(const Parameters& p) {
             p.near_black_recovery * protected_activation +
             p.black_floor_lift);
     };
+    // A sampled double-precision safety guard, not an analytic proof of the
+    // derivative or a simulation of GPU float32 rounding / the later LUT.
     constexpr int kSamples = 2048;
     double previous_x = 0.0;
     double previous_y = curve(0.0);
@@ -593,6 +621,10 @@ std::array<std::uint8_t, 16> calculate_dxbc_checksum(std::span<const std::uint8_
         throw PatchError("Not a valid DXBC container");
     }
 
+    // DXBC header: [0,4) magic, [4,20) stored checksum. Hash only [20,end).
+    // This is not ordinary MD5(data): the DXBC final block places bit_count
+    // at word 0 and (bit_count >> 2) | 1 at word 15. Do not use a generic
+    // MD5 library's padding in place of the two tail cases below.
     const auto data = blob.subspan(20u);
     const auto size = data.size();
     const auto bit_count = static_cast<std::uint32_t>((size * 8u) & 0xFFFFFFFFu);
@@ -711,6 +743,9 @@ DxbcInfo parse_dxbc_info(std::span<const std::uint8_t> blob) {
     std::uint32_t dcl_temps_count = 0;
     while (cursor_words < word_count) {
         const auto token = read_u32(blob, start + cursor_words * 4u);
+        // D3D token format: opcode bits 0..10, DWORD length bits 24..30.
+        // This walker handles the instruction format used by our release
+        // shaders; it is not a general decoder for all DXBC custom-data forms.
         const auto opcode = token & 0x7FFu;
         const auto length = (token >> 24u) & 0x7Fu;
         if (length == 0u || cursor_words + length > word_count) {
@@ -751,6 +786,9 @@ std::vector<std::uint8_t> patch_shader(std::span<const std::uint8_t> blob, const
         throw PatchError("Generated parameter block changed topology length");
     }
 
+    // Replace two equal-size blocks in a private copy. Fixed template words
+    // are identical to the matched input; only validated wildcard positions
+    // can differ. Everything outside these blocks and [4,20) stays untouched.
     Bytes out(blob.begin(), blob.end());
     std::copy(new_luma.begin(), new_luma.end(),
               out.begin() + static_cast<std::ptrdiff_t>(locations.luma_abs));

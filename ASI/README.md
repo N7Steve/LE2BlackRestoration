@@ -4,6 +4,8 @@
 
 The ASI recognizes only the validated modern Black Restoration DXBC topology, patches parameter immediates in place, and leaves unknown shaders untouched. Runtime configuration, exact-modifier hotkeys, profiles, comparison, and bypass are documented in `BlackRestoration/LE2BlackRestoration.ini.example`.
 
+See the [DXBC patcher audit guide](DXBC-PATCHER.md) for decoded instructions, equations, exact editable DWORDs (including the three fade operand pairs), checksum handling, rejection rules, and reproducible validation.
+
 ## Build with LExASIs
 
 Clone [ME3Tweaks/LExASIs](https://github.com/ME3Tweaks/LExASIs) outside this repository or under the ignored `_external/` directory. Copy `BlackRestoration/` into the LExASIs root, add this line to its root `CMakeLists.txt`, and configure LExASIs normally:

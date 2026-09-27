@@ -55,10 +55,18 @@ constexpr double kBaseBlackFloorLift = 0.0;
 
 constexpr std::uint32_t kExpectedDclTemps = 5;
 
+// Throws PatchError for out-of-range settings or a failed sampled near-black
+// tonal-order guard. Nonzero black_floor_lift intentionally permits lifting 0.
 void validate_parameters(const Parameters& params);
+// DXBC-specific MD5-derived checksum of bytes [20,end), not ordinary MD5.
 std::array<std::uint8_t, 16> calculate_dxbc_checksum(std::span<const std::uint8_t> blob);
+// A short input returns false; malformed magic may throw PatchError.
 bool verify_dxbc_checksum(std::span<const std::uint8_t> blob);
+// Structural inspection only; does not verify checksum or modern topology.
 DxbcInfo parse_dxbc_info(std::span<const std::uint8_t> blob);
+// Returns a new, same-size DXBC; never modifies blob. Requires valid checksum,
+// DCL_TEMPS=5 and exactly one supported adjacent luma + near-black block pair.
+// Unknown/Legacy/ambiguous topology throws PatchError. See ../DXBC-PATCHER.md.
 std::vector<std::uint8_t> patch_shader(std::span<const std::uint8_t> blob, const Parameters& params);
 
 } // namespace blackcrush
