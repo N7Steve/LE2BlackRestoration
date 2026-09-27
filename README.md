@@ -23,6 +23,44 @@ _tools/                    ignored local builds and validation reports
 
 The primary package works without the ASI. The ASI is an optional advanced component for live tuning, hotkeys, profiles, and comparison/bypass controls.
 
+## Download and installation
+
+Download the files from [GitHub Releases](https://github.com/N7Steve/LE2BlackRestoration/releases) or the [Nexus Mods page](https://www.nexusmods.com/masseffectlegendaryedition/mods/3426).
+
+The main mod requires **ME3Tweaks Mod Manager 9.2 or newer**, which supports the M3GS Global Shader Merge system, and Mass Effect 2 Legendary Edition on Windows x64.
+
+1. Download `LE2BlackRestoration_1.0.0.7z` and import it into ME3Tweaks Mod Manager.
+2. Select **LE2 Black Restoration** in the mod library and click **Apply Mod**.
+3. Choose one preset, then launch Mass Effect 2 Legendary Edition normally.
+
+| Installer choice | Intended use |
+| --- | --- |
+| SDR: Reference (Recommended) | Balanced near-black recovery for standard SDR play; start here. |
+| SDR: Stronger | Stronger near-black recovery for SDR play. |
+| HDR: Reference | Calibrated for the game's HDR output with both in-game and display HDR active. |
+| HDR: Stronger | Additional recovery with in-game and display HDR active. |
+| Legacy: Original ME2 Black Crush Fix | Conservative, static emulation of the historical fix; not an exact port. |
+
+All five choices work without the ASI. To change the static preset, reinstall/reconfigure the mod through Mod Manager and choose another option. An HDR-capable display used in SDR mode still needs an SDR preset.
+
+### Optional ASI: manual installation
+
+`LE2BlackRestorationASI.7z` is a separate download for advanced users who want to tune the restoration against their own display while the game is running. Install the main mod with one of the **four modern presets** first. Legacy Emulation has a different shader topology and does not support ASI tuning.
+
+1. Download and extract `LE2BlackRestorationASI.7z`.
+2. Copy `LE2BlackRestoration.asi` into `Mass Effect Legendary Edition\Game\ME2\Binaries\Win64\ASI\`.
+3. Make sure the standard Legendary Edition ASI loader is installed, then launch the game.
+
+The ASI is completely optional and is distributed for manual installation, separately from the main Mod Manager package. It is not a ME3Tweaks trusted-manifest/ASI Manager release. It uses the installed `LE2BlackRestoration.ini` described below; do not overwrite your chosen preset's INI with the source example merely to install the ASI.
+
+## Compatibility and scope
+
+The modern presets recover separation immediately above black while keeping `BlackFloorLift=0`. Some reduction in apparent contrast in the deepest shadows is intentional: previously crushed tones become distinguishable. The correction does not apply a global exposure/gamma adjustment, and the native colour grading, Filmic LUT, bloom, vignette and film grain remain in the rendering path.
+
+Mods that replace the same global shader indices may conflict: M3GS selects a complete replacement according to DLC mount order rather than combining independent shader edits. Treat Vignette Remover 2.0 as not guaranteed compatible and Luma as unsupported without a dedicated integration. Black Restoration does not remove the vanilla vignette.
+
+The historical inspiration is GETT0DACH0PPA's **Mass Effect 2 too dark lighting FIX** for the original game. The included Legacy option is a visual emulation; equivalence to removing the original game's `-0.004` offset has not been proved in Legendary Edition.
+
 ## SDR defaults
 
 The built-in release defaults preserve absolute black with `BlackFloorLift=0`:
@@ -62,6 +100,20 @@ BypassKey=F9
 ```
 
 Modifiers keep fixed meanings while the four base keys can be changed. Hotkey matching is exact: unlisted extra modifiers do not trigger an action. See `ASI/BlackRestoration/LE2BlackRestoration.ini.example` for all supported key names, combinations, parameter ranges, and examples.
+
+| Default hotkeys | Action |
+| --- | --- |
+| F6 / F7 | Decrease / increase near-black recovery |
+| Shift + F6 / F7 | Decrease / increase near-black detail |
+| Ctrl + F6 / F7 | Decrease / increase near-black range |
+| Alt + F6 / F7 | Decrease / increase pure-black protection |
+| F8 | Reset custom tuning to SDR Reference defaults |
+| Shift + F8 | Compare custom tuning with SDR Reference; preserve custom values |
+| Ctrl + F8 | Save custom tuning to `LE2BlackRestoration_Profile.ini` |
+| Ctrl + Shift + F8 | Load the saved profile and apply it immediately |
+| Shift + F9 | Bypass / restore the complete restoration effect |
+
+Saving creates an editable profile INI alongside the runtime INI. You can back it up, edit it, or share it as a personal preset. Saving the runtime INI while the game is running hot-reloads valid settings. `BlackFloorLift` is deliberately INI-only: keep it at `0` to preserve absolute black at the restoration stage. Additional shadow controls are documented in the example INI.
 
 ## Validate or regenerate M3GS assets
 
