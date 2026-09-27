@@ -1,6 +1,6 @@
 # LE2 Black Restoration
 
-**LE2 Black Restoration** is a native black-crush correction and near-black detail restoration mod for Mass Effect 2 Legendary Edition, by **N7SteveMods**. Its goal is to recover separation and texture in the darkest visible tones without lifting absolute black or turning the effect into a general exposure, gamma, or contrast adjustment. This is the main repository for the complete mod: the ME3Tweaks Mod Manager package, reproducible M3GS tooling, release documentation, and optional ASI source.
+**LE2 Black Restoration** is a native black-crush correction and near-black detail restoration mod for Mass Effect 2 Legendary Edition. Its goal is to recover separation and texture in the darkest visible tones without lifting absolute black or turning the effect into a general exposure, gamma, or contrast adjustment. This is the main repository for the complete mod: the ME3Tweaks Mod Manager package, reproducible M3GS tooling, release documentation, and optional ASI source.
 
 The project is inspired by the **Original ME2 Black Crush Fix** for the classic release of Mass Effect 2. The included Legacy option is a conservative visual emulation of that historical fix, not a claimed exact shader port to Legendary Edition; the modern Black Restoration presets use a purpose-built near-black curve instead.
 
